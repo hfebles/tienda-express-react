@@ -1,8 +1,7 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { Cart, CartItem, Product, ProductVariant } from "../types";
 import { products } from "../lib/data";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 interface CartContextType {
   cart: Cart;
@@ -19,7 +18,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cart, setCart] = useState<Cart>({ items: [], total: 0 });
   const [itemCount, setItemCount] = useState(0);
 
-  // Load cart from localStorage on initial render
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
     if (savedCart) {
@@ -27,7 +25,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const parsedCart = JSON.parse(savedCart);
         setCart(parsedCart);
         
-        // Calculate item count
         const count = parsedCart.items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
         setItemCount(count);
       } catch (error) {
@@ -36,11 +33,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
     
-    // Calculate item count
     const count = cart.items.reduce((sum, item) => sum + item.quantity, 0);
     setItemCount(count);
   }, [cart]);
@@ -89,7 +84,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let updatedItems: CartItem[];
       
       if (existingItemIndex !== -1) {
-        // Update existing item
         const existingItem = currentCart.items[existingItemIndex];
         const newQuantity = existingItem.quantity + quantity;
         
@@ -101,7 +95,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updatedItems = [...currentCart.items];
         updatedItems[existingItemIndex] = { ...existingItem, quantity: newQuantity };
       } else {
-        // Add new item
         const newItem: CartItem = {
           productId,
           variantId,
@@ -149,10 +142,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updatedItems = [...currentCart.items];
       
       if (quantity <= 0) {
-        // Remove item if quantity is 0 or negative
         updatedItems.splice(itemIndex, 1);
       } else {
-        // Update quantity
         updatedItems[itemIndex] = { ...item, quantity };
       }
       

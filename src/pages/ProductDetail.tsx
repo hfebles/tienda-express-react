@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { products, categories } from "@/lib/data";
 import { Product, ProductVariant } from "@/types";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { useToast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { ShoppingCart, Heart, Share, ChevronRight, Minus, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -19,21 +18,16 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const { addToCart } = useCart();
-  const toast = useToast();
   
   useEffect(() => {
-    // Simulate API call to fetch product details
     setLoading(true);
     
-    // Find product by slug
     const foundProduct = products.find(p => p.slug === slug);
     
     if (foundProduct) {
       setProduct(foundProduct);
-      // Set the first variant as selected by default
       setSelectedVariant(foundProduct.variants[0]);
       
-      // Find related products (same category)
       const related = products.filter(p => 
         p.id !== foundProduct.id && p.categoryId === foundProduct.categoryId
       ).slice(0, 4);
@@ -41,8 +35,6 @@ const ProductDetail = () => {
     }
     
     setLoading(false);
-    
-    // Increment view count (in a real app, this would be an API call)
   }, [slug]);
   
   const handleVariantChange = (variant: ProductVariant) => {
@@ -62,7 +54,7 @@ const ProductDetail = () => {
     if (!product || !selectedVariant) return;
     
     addToCart(product.id, selectedVariant.id, quantity);
-    setQuantity(1); // Reset quantity after adding to cart
+    setQuantity(1);
   };
   
   if (loading) {
@@ -85,12 +77,10 @@ const ProductDetail = () => {
     );
   }
   
-  // Get category name
   const category = categories.find(c => c.id === product.categoryId);
   
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumbs */}
       <div className="mb-6 flex items-center text-sm text-gray-500">
         <Link to="/" className="hover:text-brand-primary">Inicio</Link>
         <ChevronRight className="h-4 w-4 mx-1" />
@@ -106,7 +96,6 @@ const ProductDetail = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-        {/* Product Images */}
         <div className="space-y-4">
           {selectedVariant && (
             <div className="aspect-square overflow-hidden rounded-lg border">
@@ -118,7 +107,6 @@ const ProductDetail = () => {
             </div>
           )}
           
-          {/* Image thumbnails */}
           {selectedVariant && selectedVariant.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {selectedVariant.images.map((image, index) => (
@@ -134,11 +122,9 @@ const ProductDetail = () => {
           )}
         </div>
         
-        {/* Product details */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">{product.name}</h1>
           
-          {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-4">
             {product.tags?.map((tag) => (
               <Badge key={tag.id} variant="secondary">
@@ -147,14 +133,12 @@ const ProductDetail = () => {
             ))}
           </div>
           
-          {/* Price */}
           {selectedVariant && (
             <div className="mb-6">
               <p className="text-3xl font-bold text-brand-primary">
                 ${selectedVariant.price.toFixed(2)}
               </p>
               
-              {/* Stock status */}
               {selectedVariant.stock > 0 ? (
                 <p className="text-sm text-green-600 mt-1">
                   En stock ({selectedVariant.stock} disponibles)
@@ -167,7 +151,6 @@ const ProductDetail = () => {
             </div>
           )}
           
-          {/* Variant selection */}
           {product.variants.length > 1 && (
             <div className="mb-6">
               <h3 className="font-medium mb-2">Color:</h3>
@@ -204,7 +187,6 @@ const ProductDetail = () => {
             </div>
           )}
           
-          {/* Quantity selector */}
           <div className="mb-6">
             <h3 className="font-medium mb-2">Cantidad:</h3>
             <div className="flex items-center">
@@ -230,7 +212,6 @@ const ProductDetail = () => {
             </div>
           </div>
           
-          {/* Add to cart and wishlist buttons */}
           <div className="flex flex-wrap gap-3 mb-8">
             <Button 
               className="flex-1" 
@@ -275,7 +256,6 @@ const ProductDetail = () => {
         </div>
       </div>
       
-      {/* Related products section */}
       <div className="mt-16">
         <h2 className="text-2xl font-bold mb-8">Productos relacionados</h2>
         <ProductGrid products={relatedProducts} />
