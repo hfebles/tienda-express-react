@@ -1,21 +1,27 @@
-
 import { User } from "../types";
 import { query } from "../lib/db";
 import { toast } from "sonner";
+import bcrypt from 'bcryptjs';
 
 export const userService = {
   // Iniciar sesión de usuario
   login: async (email: string, password: string): Promise<User | null> => {
     try {
-      const users = await query<User[]>(
+      const users = await query<(User & { password: string })[]>(
         'SELECT * FROM users WHERE email = ? LIMIT 1', 
         [email]
       );
       
       if (users && users.length > 0) {
-        // En un sistema real, validaríamos la contraseña con bcrypt
-        // Por ahora, solo devolvemos el usuario encontrado
-        return users[0];
+        const user = users[0];
+        // Comparar contraseñas hasheadas
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        
+        if (isPasswordValid) {
+          // Eliminamos la contraseña antes de devolver el usuario
+          const { password: _, ...userWithoutPassword } = user;
+          return userWithoutPassword;
+        }
       }
       return null;
     } catch (error) {
@@ -129,4 +135,3 @@ export const userService = {
     }
   }
 };
-
