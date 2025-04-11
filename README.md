@@ -1,73 +1,83 @@
-# Welcome to your Lovable project
 
-## Project info
+# Tienda Online E-commerce
 
-**URL**: https://lovable.dev/projects/5c53396c-19e0-4d29-a084-b0ccb3f8cbc1
+Este es un proyecto de tienda online desarrollado con React, TypeScript y MySQL.
 
-## How can I edit this code?
+## Requisitos
 
-There are several ways of editing your application.
+- Node.js (v18 o superior)
+- MySQL (v8 o superior)
 
-**Use Lovable**
+## Configuración inicial
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5c53396c-19e0-4d29-a084-b0ccb3f8cbc1) and start prompting.
+### 1. Configuración de la base de datos
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Crear la base de datos y las tablas:
 
-**Use your preferred IDE**
+```bash
+mysql -u [usuario] -p < db/schema.sql
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. Cargar los datos iniciales:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+mysql -u [usuario] -p < db/seed.sql
+```
 
-Follow these steps:
+### 2. Configuración del entorno
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Copia el archivo de ejemplo de variables de entorno:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+cp .env.example .env
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. Edita el archivo `.env` con tus credenciales de MySQL y otras configuraciones.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 3. Instalación de dependencias
+
+```bash
+npm install
+```
+
+## Ejecución en desarrollo
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Estructura del proyecto
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+/
+├── db/                    # Scripts SQL para la base de datos
+├── src/
+│   ├── components/        # Componentes de React
+│   ├── contexts/          # Contextos de React (Auth, Cart)
+│   ├── hooks/             # Custom hooks
+│   ├── lib/               # Utilidades y configuraciones
+│   ├── pages/             # Páginas de la aplicación
+│   ├── services/          # Servicios para comunicación con la BD
+│   └── types/             # Definiciones de tipos TypeScript
+└── README.md
+```
 
-**Use GitHub Codespaces**
+## Características principales
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- Autenticación de usuarios
+- Catálogo de productos con categorías y variantes
+- Carrito de compras
+- Proceso de checkout
+- Panel de administración
+- Gestión de pedidos
+- Pagos por transferencia y pago móvil
 
-## What technologies are used for this project?
+## Usuarios de prueba
 
-This project is built with:
+**Administrador:**
+- Email: admin@example.com
+- Contraseña: admin123
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/5c53396c-19e0-4d29-a084-b0ccb3f8cbc1) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+**Cliente:**
+- Email: cliente@example.com
+- Contraseña: cliente123

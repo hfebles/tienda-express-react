@@ -1,36 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Eye } from "lucide-react";
-
-// Mock order data
-const mockOrders = [
-  {
-    id: "ORD-001",
-    date: new Date(2023, 3, 15),
-    status: "processing",
-    items: 3,
-    total: 129.97,
-  },
-  {
-    id: "ORD-002",
-    date: new Date(2023, 2, 28),
-    status: "delivered",
-    items: 1,
-    total: 59.99,
-  },
-  {
-    id: "ORD-003",
-    date: new Date(2023, 1, 10),
-    status: "cancelled",
-    items: 2,
-    total: 45.98,
-  },
-];
+import { orderService } from "@/services/orderService";
+import { Order } from "@/types";
 
 // Status badge color mapping
 const statusColors = {
@@ -53,12 +30,40 @@ const statusLabels = {
 const Orders = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [orders] = useState(mockOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadOrders = async () => {
+      if (user) {
+        try {
+          const userOrders = await orderService.getUserOrders(user.id);
+          setOrders(userOrders);
+        } catch (error) {
+          console.error("Error al cargar pedidos:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+    
+    loadOrders();
+  }, [user]);
   
   // If not logged in, redirect to login
   if (!user) {
     navigate("/login?redirect=/pedidos");
     return null;
+  }
+  
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12 flex justify-center">
+        <p>Cargando pedidos...</p>
+      </div>
+    );
   }
   
   // Empty state
@@ -102,10 +107,10 @@ const Orders = () => {
                     </Badge>
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
-                    Fecha: {order.date.toLocaleDateString()}
+                    Fecha: {new Date(order.createdAt).toLocaleDateString()}
                   </div>
                   <div className="mt-2">
-                    <p>{order.items} productos | ${order.total.toFixed(2)}</p>
+                    <p>{order.items.length} productos | ${order.total.toFixed(2)}</p>
                   </div>
                 </div>
                 

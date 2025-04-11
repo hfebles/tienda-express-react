@@ -1,7 +1,8 @@
+
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { User } from "../types";
-import { users } from "../lib/data";
 import { toast } from "sonner";
+import { userService } from "../services/userService";
 
 interface AuthContextType {
   user: User | null;
@@ -28,18 +29,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication - would connect to MySQL
     setLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const loggedInUser = await userService.login(email, password);
       
-      // Find user by email (in a real app, would validate password too)
-      const foundUser = users.find(u => u.email === email);
-      
-      if (foundUser) {
-        setUser(foundUser);
-        localStorage.setItem("user", JSON.stringify(foundUser));
+      if (loggedInUser) {
+        setUser(loggedInUser);
+        localStorage.setItem("user", JSON.stringify(loggedInUser));
         toast.success("Inicio de sesión exitoso");
         return true;
       } else {
@@ -55,40 +51,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (userData: Partial<User>, password: string): Promise<boolean> => {
-    // Mock registration - would connect to MySQL
     setLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const newUser = await userService.register(userData, password);
       
-      // Check if email already exists
-      const existingUser = users.find(u => u.email === userData.email);
-      
-      if (existingUser) {
-        toast.error("El email ya está registrado");
+      if (newUser) {
+        setUser(newUser);
+        localStorage.setItem("user", JSON.stringify(newUser));
+        toast.success("Registro exitoso");
+        return true;
+      } else {
         return false;
       }
-      
-      // Create new user
-      const newUser: User = {
-        id: String(users.length + 1),
-        email: userData.email!,
-        dni: userData.dni!,
-        phone: userData.phone!,
-        name: userData.name!,
-        address: userData.address || "",
-        city: userData.city || "",
-        isAdmin: false
-      };
-      
-      // In a real app, this would be a database insert
-      users.push(newUser);
-      
-      // Auto login
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
-      toast.success("Registro exitoso");
-      return true;
     } catch (error) {
       toast.error("Error al registrarse");
       return false;
@@ -108,22 +82,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const updatedUser = await userService.updateProfile(user.id, userData);
       
-      // Update user data
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-      // In a real app, this would update the database
-      const userIndex = users.findIndex(u => u.id === user.id);
-      if (userIndex !== -1) {
-        users[userIndex] = updatedUser;
+      if (updatedUser) {
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        toast.success("Perfil actualizado");
+        return true;
+      } else {
+        return false;
       }
-      
-      toast.success("Perfil actualizado");
-      return true;
     } catch (error) {
       toast.error("Error al actualizar perfil");
       return false;

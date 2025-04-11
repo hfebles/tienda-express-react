@@ -27,4 +27,5 @@ const Toaster = ({ ...props }: ToasterProps) => {
   )
 }
 
+// Re-exportar toast para usar en toda la aplicación
 export { Toaster, toast }
