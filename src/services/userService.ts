@@ -1,5 +1,6 @@
+
 import { User } from "../types";
-import { query } from "../lib/db";
+import { query } from "../lib/mockDb";
 import { toast } from "sonner";
 import bcrypt from 'bcryptjs';
 
@@ -45,12 +46,15 @@ export const userService = {
         return null;
       }
       
-      // En un sistema real, hashearíamos la contraseña con bcrypt
+      // Hash de la contraseña antes de guardarla
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
       const result = await query<any>(
-        `INSERT INTO users (email, dni, phone, name, address, city, isAdmin) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO users (email, password, dni, phone, name, address, city, isAdmin) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           userData.email,
+          hashedPassword,
           userData.dni,
           userData.phone,
           userData.name,
@@ -68,7 +72,9 @@ export const userService = {
         );
         
         if (newUser && newUser.length > 0) {
-          return newUser[0];
+          // Ensure we don't return the password
+          const { password: _, ...userWithoutPassword } = newUser[0] as any;
+          return userWithoutPassword;
         }
       }
       
@@ -105,7 +111,9 @@ export const userService = {
       );
       
       if (updatedUser && updatedUser.length > 0) {
-        return updatedUser[0];
+        // Ensure we don't return the password
+        const { password: _, ...userWithoutPassword } = updatedUser[0] as any;
+        return userWithoutPassword;
       }
       
       return null;
@@ -125,13 +133,65 @@ export const userService = {
       );
       
       if (users && users.length > 0) {
-        return users[0];
+        // Ensure we don't return the password
+        const { password: _, ...userWithoutPassword } = users[0] as any;
+        return userWithoutPassword;
       }
       
       return null;
     } catch (error) {
       console.error('Error al obtener usuario:', error);
       return null;
+    }
+  },
+  
+  // Cambiar contraseña de usuario
+  changePassword: async (userId: string, currentPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      // Primero verificamos que la contraseña actual sea correcta
+      const users = await query<(User & { password: string })[]>(
+        'SELECT * FROM users WHERE id = ? LIMIT 1',
+        [userId]
+      );
+      
+      if (!users || users.length === 0) {
+        toast.error("Usuario no encontrado");
+        return false;
+      }
+      
+      const user = users[0];
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      
+      if (!isPasswordValid) {
+        toast.error("La contraseña actual no es correcta");
+        return false;
+      }
+      
+      // La contraseña actual es correcta, actualizamos a la nueva
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      
+      // Actualizamos en nuestra "base de datos"
+      const allUsers = await query<(User & { password: string })[]>(
+        'SELECT * FROM users', []
+      );
+      
+      const updatedUsers = allUsers.map(u => {
+        if (u.id === userId) {
+          return { ...u, password: hashedNewPassword };
+        }
+        return u;
+      });
+      
+      // Esta es una simulación de actualizar la contraseña en la base de datos
+      // En un sistema real, usaríamos una consulta UPDATE
+      localStorage.setItem('mockDb', JSON.stringify({ users: updatedUsers }));
+      
+      toast.success("Contraseña actualizada correctamente");
+      return true;
+    } catch (error) {
+      console.error('Error al cambiar contraseña:', error);
+      toast.error("Error al cambiar la contraseña");
+      return false;
     }
   }
 };

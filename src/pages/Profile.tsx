@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { LogOut, User } from "lucide-react";
+import { userService } from "@/services/userService";
 
 const Profile = () => {
   const { user, updateProfile, logout } = useAuth();
@@ -30,11 +31,26 @@ const Profile = () => {
     city: user.city || "",
   });
   
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -51,6 +67,48 @@ const Profile = () => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validaciones básicas
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toast.error("Todos los campos son obligatorios");
+      return;
+    }
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Las contraseñas nuevas no coinciden");
+      return;
+    }
+    
+    if (passwordData.newPassword.length < 6) {
+      toast.error("La nueva contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+    
+    setIsPasswordLoading(true);
+    
+    try {
+      const success = await userService.changePassword(
+        user.id,
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+      
+      if (success) {
+        // Limpiar el formulario
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        });
+        toast.success("Contraseña actualizada correctamente");
+      }
+    } finally {
+      setIsPasswordLoading(false);
     }
   };
   
@@ -214,22 +272,45 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form>
+                  <form onSubmit={handleChangePassword}>
                     <div className="grid grid-cols-1 gap-4 mb-6">
                       <div>
                         <Label htmlFor="currentPassword">Contraseña Actual</Label>
-                        <Input id="currentPassword" type="password" />
+                        <Input 
+                          id="currentPassword" 
+                          name="currentPassword"
+                          type="password" 
+                          value={passwordData.currentPassword}
+                          onChange={handlePasswordChange}
+                          required 
+                        />
                       </div>
                       <div>
                         <Label htmlFor="newPassword">Nueva Contraseña</Label>
-                        <Input id="newPassword" type="password" />
+                        <Input 
+                          id="newPassword" 
+                          name="newPassword"
+                          type="password" 
+                          value={passwordData.newPassword}
+                          onChange={handlePasswordChange}
+                          required 
+                        />
                       </div>
                       <div>
                         <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-                        <Input id="confirmPassword" type="password" />
+                        <Input 
+                          id="confirmPassword" 
+                          name="confirmPassword"
+                          type="password" 
+                          value={passwordData.confirmPassword}
+                          onChange={handlePasswordChange}
+                          required 
+                        />
                       </div>
                     </div>
-                    <Button type="submit">Cambiar Contraseña</Button>
+                    <Button type="submit" disabled={isPasswordLoading}>
+                      {isPasswordLoading ? "Cambiando..." : "Cambiar Contraseña"}
+                    </Button>
                   </form>
                 </CardContent>
               </Card>

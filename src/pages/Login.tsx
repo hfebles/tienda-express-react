@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 
 const Login = () => {
   const { login, register } = useAuth();
@@ -48,12 +49,17 @@ const Login = () => {
     
     // Simple form validation
     if (!registerName || !registerEmail || !registerDni || !registerPhone || !registerPassword) {
-      alert("Todos los campos son obligatorios");
+      toast.error("Todos los campos son obligatorios");
       return;
     }
     
     if (registerPassword !== registerConfirmPassword) {
-      alert("Las contraseñas no coinciden");
+      toast.error("Las contraseñas no coinciden");
+      return;
+    }
+
+    if (registerPassword.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres");
       return;
     }
     
